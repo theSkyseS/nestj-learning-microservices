@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SERVICE_NAME=auth-service
+    volumes:
+      - .:/app
+    environment:
+      - SERVICE_NAME=auth-service
+    env_file:
+      - .env
+    depends_on:
+      - db-auth
+      - rabbitmq
+    ports:
+      - "3000:3000"
+
+  profile-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SERVICE_NAME=profile-service
+    volumes:
+      - .:/app
+    environment:
+      - SERVICE_NAME=profile-service
+    env_file:
+      - .env
+    depends_on:
+      - db-profile
+      - rabbitmq
+    ports:
+      - "3000:3000"
+
+  db-auth:
+    image: postgres
+    env_file:
+      - .env
+    volumes:
+      - auth-db:/var/lib/postgresql/data
+
+  db-profile:
+    image: postgres
+    env_file:
+      - .env
+    volumes:
+      - profile-db:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    env_file:
+      - .env
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+volumes:
+  auth-db:
+  profile-db:
