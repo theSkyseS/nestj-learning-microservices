@@ -1,6 +1,8 @@
 # Use an official Node.js runtime as a parent image
 FROM node:18-alpine
 
+ENV PORT=${RABBITMQ_PORT}:-5672
+
 # Set the working directory to /app
 WORKDIR /usr/microservices/auth-service
 
@@ -17,7 +19,7 @@ RUN apk add --no-cache --virtual .build-deps \
 COPY . .
 
 # Expose port for the application
-EXPOSE 5672
+EXPOSE $PORT
 
 # Define the command to start the application
 CMD ["npm", "run", "start"]
