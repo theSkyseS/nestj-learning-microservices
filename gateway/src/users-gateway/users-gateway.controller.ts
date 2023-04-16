@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from '../auth-gateway/dto/login.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersGatewayController {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authService: ClientProxy,
+    @Inject('PROFILE_SERVICE') private readonly profileService: ClientProxy,
   ) {}
 
   @Get()
@@ -33,7 +35,7 @@ export class UsersGatewayController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() userDto: LoginDto) {
+  update(@Param('id') id: string, @Body() userDto: UpdateUserDto) {
     return this.authService.send('users.update', { id, userDto });
   }
 
@@ -50,5 +52,10 @@ export class UsersGatewayController {
   @Post(':id/roles/add')
   addRole(@Param('id') id: string, @Body('role') role: string) {
     return this.authService.send('users.addRole', { id, role });
+  }
+
+  @Get(':id/profile')
+  getProfile(@Param('id') id: string) {
+    return this.profileService.send('profiles.getByUserId', id);
   }
 }
