@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ClientProxiesModule } from '../client-proxies.module';
 
-@Module({})
+@Module({
+  imports: [ClientProxiesModule],
+})
 export class AuthModule {}
