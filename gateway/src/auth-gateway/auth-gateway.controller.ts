@@ -1,8 +1,9 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('auth')
 export class AuthGatewayController {
@@ -30,11 +31,13 @@ export class AuthGatewayController {
     return { profile, user };
   }
 
+  @UseGuards(AuthGuard)
   @Post('/refresh')
   refresh(@Body('refresh_token') refreshToken: string) {
     return this.authService.send('auth.refresh', refreshToken);
   }
 
+  @UseGuards(AuthGuard)
   @Post('/logout')
   logout(@Body('refresh_token') refreshToken: string) {
     return this.authService.send('auth.logout', refreshToken);
