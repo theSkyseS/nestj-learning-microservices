@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from '../auth/auth.service';
@@ -21,69 +17,6 @@ export class UsersService {
     private authService: AuthService,
   ) {}
 
-  async login(user: CreateUserDto) {
-    const userData = await this.getUserByEmail(user.email);
-    if (!userData) {
-      throw new BadRequestException('User not found');
-    }
-
-    const isValid = await this.authService.validatePassword(
-      user.password,
-      userData.password,
-    );
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid password');
-    }
-
-    const tokens = await this.authService.generateToken(userData);
-    this.authService.saveRefreshToken(tokens.refresh_token, userData.id);
-    return { user: userData, response: tokens };
-  }
-
-  async register(user: CreateUserDto) {
-    const transaction = await this.userRepository.sequelize.transaction();
-    try {
-      const userData = await this.getUserByEmail(user.email);
-      if (userData) {
-        throw new BadRequestException('User already exists');
-      }
-      const hashedPassword = await bcrypt.hash(
-        user.password,
-        Number(process.env.PASSWORD_HASH_SALT),
-      );
-      const newUser = await this.createUser({
-        ...user,
-        password: hashedPassword,
-      });
-      const tokens = await this.authService.generateToken(newUser);
-      this.authService.saveRefreshToken(tokens.refresh_token, newUser.id);
-      await transaction.commit();
-      return { user: newUser, tokens: tokens };
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
-  }
-
-  async logout(refreshToken: string) {
-    await this.authService.removeRefreshToken(refreshToken);
-    return true;
-  }
-
-  async refresh(refreshToken: string) {
-    if (!refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    const tokenData = await this.authService.findRefreshToken(refreshToken);
-    if (!tokenData) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    const userData = await this.getUserById(tokenData.userId);
-    const tokens = await this.authService.generateToken(userData);
-    this.authService.saveRefreshToken(tokens.refresh_token, userData.id);
-    return { user: userData, tokens: tokens };
-  }
-
   async createUser(dto: CreateUserDto): Promise<UserModel> {
     const user = await this.userRepository.create(dto);
     const role = await this.rolesService.getRoleByName('USER');
@@ -96,9 +29,9 @@ export class UsersService {
     return await this.userRepository.findAll({ include: RoleModel });
   }
 
-  async getUserByEmail(email: string): Promise<UserModel> {
+  async getUserByLogin(login: string): Promise<UserModel> {
     return await this.userRepository.findOne({
-      where: { email },
+      where: { login: login },
       include: RoleModel,
     });
   }
@@ -139,11 +72,11 @@ export class UsersService {
   async updateUser(id: number, dto: UpdateUserDto) {
     const user = await this.userRepository.findByPk(id);
     if (dto.email) {
-      const userData = await this.getUserByEmail(dto.email);
+      const userData = await this.getUserByLogin(dto.email);
       if (userData) {
         throw new BadRequestException('User with this email already exists');
       }
-      user.email = dto.email;
+      user.login = dto.email;
     }
 
     if (dto.password) {
