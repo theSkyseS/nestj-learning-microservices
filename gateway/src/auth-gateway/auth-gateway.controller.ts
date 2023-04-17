@@ -22,12 +22,16 @@ export class AuthGatewayController {
 
   @Post('/register')
   async register(@Body() register: RegisterDto) {
-    const registerResults = await Promise.all([
-      lastValueFrom(this.authService.send('auth.register', register)),
-      lastValueFrom(this.profileService.send('profile.create', register)),
-    ]);
+    const user = await lastValueFrom(
+      this.authService.send('auth.register', register),
+    );
+    const profile = await lastValueFrom(
+      this.profileService.send('profile.create', {
+        userId: user.user.id,
+        register,
+      }),
+    );
 
-    const [profile, user] = registerResults;
     return { profile, user };
   }
 
