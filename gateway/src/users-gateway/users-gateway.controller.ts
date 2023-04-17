@@ -65,7 +65,7 @@ export class UsersGatewayController {
   @Roles('ADMIN')
   @Post(':id/roles/add')
   addRole(@Param('id') id: string, @Body('role') role: string) {
-    return this.authService.send('users.addRole', { id, role });
+    return this.authService.send('users.addRole', { userId: id, role });
   }
 
   @UseGuards(AuthGuard, RolesGuard)
