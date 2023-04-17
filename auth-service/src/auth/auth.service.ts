@@ -10,7 +10,6 @@ import * as bcrypt from 'bcryptjs';
 import { Payload } from '../auth/auth.payload';
 import { UserModel } from '../users/users.model';
 import { RefreshModel } from './refresh-token.model';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()

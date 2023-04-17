@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
-import { AuthService } from '../auth/auth.service';
 import { RoleModel } from '../roles/roles.model';
 import { RolesService } from '../roles/roles.service';
 import { AddRoleDto } from './dto/add-role.dto';
@@ -14,7 +13,6 @@ export class UsersService {
   constructor(
     @InjectModel(UserModel) private userRepository: typeof UserModel,
     private rolesService: RolesService,
-    private authService: AuthService,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<UserModel> {
@@ -49,7 +47,9 @@ export class UsersService {
       await user.$add('roles', role.id);
       return user;
     }
-    throw new BadRequestException('Role or User not found');
+    throw new BadRequestException(
+      `Role: ${dto.role} or User: ${dto.userId} not found`,
+    );
   }
 
   async removeRoleFromUser(dto: AddRoleDto) {
