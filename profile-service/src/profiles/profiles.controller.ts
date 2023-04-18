@@ -2,7 +2,7 @@ import { Controller, UseInterceptors } from '@nestjs/common';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { AckInterceptor } from './ack.interceptor';
+import { AckInterceptor } from '../ack.interceptor';
 
 @UseInterceptors(AckInterceptor)
 @Controller()

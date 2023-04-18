@@ -1,5 +1,5 @@
-import { SequelizeModule } from '@nestjs/sequelize';
 import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ProfileModel } from './profiles/profiles.model';
 import { ProfilesModule } from './profiles/profiles.module';
 
