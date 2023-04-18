@@ -4,7 +4,7 @@ FROM node:18-alpine
 ENV PORT=${RABBITMQ_PORT:-5672}
 
 # Set the working directory to /app
-WORKDIR /usr/microservices/auth-service
+WORKDIR /usr/microservices/profile-service
 
 # Copy package.json and package-lock.json to the container
 COPY package*.json ./

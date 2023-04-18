@@ -1,9 +1,26 @@
 version: "3"
 
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+      args:
+        - SERVICE_NAME=gateway
+    volumes:
+      - .:/app
+    environment:
+      - SERVICE_NAME=gateway
+    depends_on:
+      - auth-service
+      - profile-service
+      - rabbitmq
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+
   auth-service:
     build:
-      context: .
+      context: ./auth-service
       dockerfile: Dockerfile
       args:
         - SERVICE_NAME=auth-service
@@ -17,11 +34,11 @@ services:
       - db-auth
       - rabbitmq
     ports:
-      - "3000:3000"
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
 
   profile-service:
     build:
-      context: .
+      context: ./profile-service
       dockerfile: Dockerfile
       args:
         - SERVICE_NAME=profile-service
@@ -35,7 +52,7 @@ services:
       - db-profile
       - rabbitmq
     ports:
-      - "3000:3000"
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
 
   db-auth:
     image: postgres
@@ -56,8 +73,8 @@ services:
     env_file:
       - .env
     ports:
-      - "15672:15672"
-      - "5672:5672"
+      - ${RABBITMQ_MANAGEMENT_UI_PORT}:${RABBITMQ_MANAGEMENT_UI_PORT}
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
 
 volumes:
   auth-db:
