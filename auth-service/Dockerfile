@@ -1,27 +1,23 @@
-# Use an official Node.js runtime as a parent image
-FROM node:18-alpine
+FROM node:18-alpine As auth
 
-ENV PORT=${RABBITMQ_PORT:-5672}
+WORKDIR /usr/src/app
 
-# Set the working directory to /app
-WORKDIR /usr/microservices/auth-service
+COPY --chown=node:node package*.json ./
 
-# Copy package.json and package-lock.json to the container
-COPY package*.json ./
+RUN echo >>/etc/apk/repositories \
+  "https://mirror.yandex.ru/mirrors/alpine/v3.17/main/" \ 
+  && apk add --no-cache --virtual build-dependencies \
+  python3 make g++ \
+  && npm ci --omit=dev\
+  && npm install -g @nestjs/cli \
+  && npm cache clean -- force \
+  && apk del build-dependencies
 
-# Install the dependencies
-RUN apk add --no-cache --virtual build-dependencies \
-  python \
-  make \
-  g++ && \
-  npm install --only=production && \
-  apk del build-dependencies
+COPY --chown=node:node . .
 
-# Copy the rest of the application code to the container
-COPY . .
+USER node
 
-# Expose port for the application
+ENV PORT=${AUTH_PORT:-5001}
 EXPOSE $PORT
 
-# Define the command to start the application
 CMD ["npm", "run", "start"]

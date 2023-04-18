@@ -34,7 +34,7 @@ services:
       - db-auth
       - rabbitmq
     ports:
-      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+      - ${AUTH_PORT}:${AUTH_PORT}
 
   profile-service:
     build:
@@ -52,10 +52,16 @@ services:
       - db-profile
       - rabbitmq
     ports:
-      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+      - ${PROFILE_PORT}:${PROFILE_PORT}
 
   db-auth:
     image: postgres
+    environment:
+      - POSTGRES_DB=${AUTH_POSTGRES_DB}
+      - POSTGRES_USER=${AUTH_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${AUTH_POSTGRES_HOST}
+      - POSTGRES_PORT=${AUTH_POSTGRES_PORT}
     env_file:
       - .env
     volumes:
@@ -63,6 +69,12 @@ services:
 
   db-profile:
     image: postgres
+    environment:
+      - POSTGRES_DB=${PROFILE_POSTGRES_DB}
+      - POSTGRES_USER=${PROFILE_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PROFILE_POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${PROFILE_POSTGRES_HOST}
+      - POSTGRES_PORT=${PROFILE_POSTGRES_PORT}
     env_file:
       - .env
     volumes:
