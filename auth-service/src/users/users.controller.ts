@@ -6,14 +6,16 @@ import {
   Param,
   Post,
   Put,
-  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AddRoleDto } from './dto/add-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-import { ClientProxy, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { AckInterceptor } from '../ack.interceptor';
 
+@UseInterceptors(AckInterceptor)
 @Controller()
 export class UsersController {
   constructor(private usersServise: UsersService) {}
