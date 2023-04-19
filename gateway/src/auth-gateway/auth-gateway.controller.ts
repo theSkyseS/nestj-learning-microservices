@@ -26,7 +26,7 @@ export class AuthGatewayController {
       this.authService.send('auth.register', register),
     );
     const profile = await lastValueFrom(
-      this.profileService.send('profile.create', {
+      this.profileService.send('profiles.create', {
         userId: user.user.id,
         register,
       }),
