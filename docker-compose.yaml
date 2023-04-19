@@ -1,5 +1,12 @@
 version: "3"
 
+networks:
+  backend:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.1.0/24
+
 services:
   gateway:
     build:
@@ -11,12 +18,16 @@ services:
       - .:/app
     environment:
       - SERVICE_NAME=gateway
+    env_file:
+      - .env
     depends_on:
       - auth-service
       - profile-service
       - rabbitmq
     ports:
       - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    networks:
+      - backend
 
   auth-service:
     build:
@@ -35,6 +46,8 @@ services:
       - rabbitmq
     ports:
       - ${AUTH_PORT}:${AUTH_PORT}
+    networks:
+      - backend
 
   profile-service:
     build:
@@ -53,6 +66,8 @@ services:
       - rabbitmq
     ports:
       - ${PROFILE_PORT}:${PROFILE_PORT}
+    networks:
+      - backend
 
   db-auth:
     image: postgres
@@ -61,11 +76,18 @@ services:
       - POSTGRES_USER=${AUTH_POSTGRES_USER}
       - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
       - POSTGRES_HOST=${AUTH_POSTGRES_HOST}
-      - POSTGRES_PORT=${AUTH_POSTGRES_PORT}
     env_file:
       - .env
+    command: -p ${AUTH_POSTGRES_PORT}
     volumes:
       - auth-db:/var/lib/postgresql/data
+    expose:
+      - ${AUTH_POSTGRES_PORT}
+    ports:
+      - 5434:${AUTH_POSTGRES_PORT}
+    networks:
+      backend:
+        ipv4_address: ${AUTH_POSTGRES_HOST}
 
   db-profile:
     image: postgres
@@ -74,19 +96,31 @@ services:
       - POSTGRES_USER=${PROFILE_POSTGRES_USER}
       - POSTGRES_PASSWORD=${PROFILE_POSTGRES_PASSWORD}
       - POSTGRES_HOST=${PROFILE_POSTGRES_HOST}
-      - POSTGRES_PORT=${PROFILE_POSTGRES_PORT}
     env_file:
       - .env
+    command: -p ${PROFILE_POSTGRES_PORT}
     volumes:
       - profile-db:/var/lib/postgresql/data
+    expose:
+      - ${PROFILE_POSTGRES_PORT}
+    ports:
+      - ${PROFILE_POSTGRES_PORT}:${PROFILE_POSTGRES_PORT}
+    networks:
+      backend:
+        ipv4_address: ${PROFILE_POSTGRES_HOST}
 
   rabbitmq:
     image: rabbitmq:management-alpine
     env_file:
       - .env
+    expose:
+      - ${RABBITMQ_PORT}
     ports:
       - ${RABBITMQ_MANAGEMENT_UI_PORT}:${RABBITMQ_MANAGEMENT_UI_PORT}
       - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+    networks:
+      backend:
+        ipv4_address: ${RABBITMQ_HOST}
 
 volumes:
   auth-db:
