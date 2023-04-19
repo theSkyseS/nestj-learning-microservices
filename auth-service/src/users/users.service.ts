@@ -16,11 +16,18 @@ export class UsersService {
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<UserModel> {
-    const user = await this.userRepository.create(dto);
-    const role = await this.rolesService.getRoleByName('USER');
-    await user.$set('roles', [role.id]);
-    user.roles = [role];
-    return user;
+    const transaction = await this.userRepository.sequelize.transaction();
+    try {
+      const user = await this.userRepository.create(dto);
+      const role = await this.rolesService.getRoleByName('USER');
+      await user.$set('roles', [role.id]);
+      user.roles = [role];
+      transaction.commit();
+      return user;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async getAllUsers(): Promise<UserModel[]> {
