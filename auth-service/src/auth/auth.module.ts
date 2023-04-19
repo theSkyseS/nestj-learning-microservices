@@ -8,8 +8,8 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   providers: [AuthService],
+  controllers: [AuthController],
   imports: [SequelizeModule.forFeature([RefreshModel]), JwtModule, UsersModule],
   exports: [AuthService, JwtModule],
-  controllers: [AuthController],
 })
 export class AuthModule {}
