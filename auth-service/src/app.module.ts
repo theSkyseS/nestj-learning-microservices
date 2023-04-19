@@ -18,6 +18,8 @@ import { UsersModule } from './users/users.module';
       password: process.env.AUTH_POSTGRES_PASSWORD,
       database: process.env.AUTH_POSTGRES_DB,
       models: [UserModel, RoleModel, UserRolesModel, RefreshModel],
+      autoLoadModels: true,
+      synchronize: true,
     }),
     UsersModule,
     RolesModule,
