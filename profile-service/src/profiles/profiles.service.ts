@@ -16,12 +16,16 @@ export class ProfilesService {
 
   async getProfileByUserId(userId: string) {
     return await this.profileRepository.findOne({
-      where: { user: userId },
+      where: { userId: userId },
     });
   }
 
   async getProfileById(id: string) {
     return await this.profileRepository.findByPk(id);
+  }
+
+  async createProfile(userDto: CreateProfileDto) {
+    return await this.profileRepository.create(userDto);
   }
 
   async updateProfile(id: string, userDto: UpdateProfileDto) {
