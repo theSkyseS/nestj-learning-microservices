@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import {
   BelongsToMany,
   Column,
@@ -15,7 +14,6 @@ interface RoleCreationAttributes {
 
 @Table({ tableName: 'roles' })
 export class RoleModel extends Model<RoleModel, RoleCreationAttributes> {
-  @ApiProperty({ description: "Role's ID", example: '2' })
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -24,7 +22,6 @@ export class RoleModel extends Model<RoleModel, RoleCreationAttributes> {
   })
   id: number;
 
-  @ApiProperty({ description: "Role's Name", example: 'ADMIN' })
   @Column({
     type: DataType.STRING,
     unique: true,
