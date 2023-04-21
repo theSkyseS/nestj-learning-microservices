@@ -1,10 +1,4 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 interface ProfileModelCreationAttr {
   name: string;
