@@ -18,6 +18,7 @@ export class RegisterDto {
     minLowercase: 1,
     minUppercase: 1,
     minNumbers: 1,
+    minSymbols: 0,
   })
   @ApiProperty({ description: "User's password", example: '1213452' })
   readonly password: string;
