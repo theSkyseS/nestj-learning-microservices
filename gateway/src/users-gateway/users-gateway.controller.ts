@@ -89,8 +89,8 @@ export class UsersGatewayController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.send('users.remove', id);
+  delete(@Param('id') id: string) {
+    return this.authService.send('users.delete', id);
   }
 
   @ApiOperation({ summary: 'Deletes user' })
@@ -109,7 +109,7 @@ export class UsersGatewayController {
   @Roles('ADMIN')
   @Post(':id/roles/remove')
   removeRole(@Param('id') id: string, @Body('role') role: string) {
-    return this.authService.send('users.removeRole', { id, role });
+    return this.authService.send('users.removeRole', { userId: id, role });
   }
 
   @ApiOperation({ summary: 'Adds role to a user' })
