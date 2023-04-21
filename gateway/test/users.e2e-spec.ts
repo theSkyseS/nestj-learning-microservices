@@ -3,80 +3,30 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import * as bcrypt from 'bcryptjs';
+import {
+  adminUser,
+  newUser,
+  nonExistentUser,
+  registerUser,
+  user,
+  userHashedPassword,
+} from './constants';
 
 describe('UsersController (e2e)', () => {
   type Tokens = { access_token: string; refresh_token: string };
   let app: INestApplication;
-  const adminUser = {
-    email: 'ADMIN@gmail.com',
-    password: '123',
-  };
-  const adminUserHashedPassword =
-    '$2a$10$4cUC/HXzYwmpKC8tNPgNYOU4fVNkx0.SPPCHtMk8YEyVNmzQtzwIS';
-
-  const user = {
-    email: 'USER@gmail.com',
-    password: '321',
-  };
-  const userHashedPassword =
-    '$2a$10$a/kgi.9HhUBvNZX6.G6N8uZ01nIEQmGlToZfbZEVvJBRM/tsWNXLS';
-
-  const nonExistentUser = {
-    email: 'nonExistent@gmail.com',
-    password: 'test',
-  };
-  const newUser = {
-    email: 'newuser@gmail.com',
-    password: 'test',
-  };
-
-  const registerUser = {
-    email: 'neweruser@gmail.com',
-    password: 'test123',
-    name: 'newer user',
-    phoneNumber: '+79991234567',
-    about: 'I am user',
-    address: 'User st., 25',
-  };
 
   let adminTokens: Tokens;
   let userTokens: Tokens;
   let userId: number;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
-    const createdAdmin = await UserModel.create({
-      email: adminUser.email,
-      password: adminUserHashedPassword,
-    });
-
-    const createdUser = await UserModel.create({
-      email: user.email,
-      password: userHashedPassword,
-    });
-    userId = createdUser.id;
-
-    const userRole = await RoleModel.create({
-      name: 'USER',
-    });
-
-    const adminRole = await RoleModel.create({
-      name: 'ADMIN',
-    });
-
-    await createdAdmin.$add('roles', userRole.id);
-    await createdAdmin.$add('roles', adminRole.id);
-    await createdUser.$add('roles', userRole.id);
-  });
-
-  beforeEach(async () => {
-    /* */
   });
 
   describe('/users/login (POST)', () => {
@@ -84,7 +34,7 @@ describe('UsersController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/users/login')
         .send({
-          email: adminUser.email,
+          email: adminUser.login,
           password: 'test',
         })
         .expect(401);
@@ -124,7 +74,7 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send(newUser)
         .expect(201);
-      expect(response.body.email).toEqual(newUser.email);
+      expect(response.body.email).toEqual(newUser.login);
     });
   });
 
@@ -144,7 +94,7 @@ describe('UsersController (e2e)', () => {
         .expect(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          email: user.email,
+          email: user.login,
           password: userHashedPassword,
         }),
       );
@@ -172,7 +122,7 @@ describe('UsersController (e2e)', () => {
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(user.email);
+      expect(response.body.email).toEqual(user.login);
       response = await request(app.getHttpServer()).get(`/users/${userId}`);
       expect(response.body.roles).toContainEqual(
         expect.objectContaining({ name: 'ADMIN' }),
@@ -201,7 +151,7 @@ describe('UsersController (e2e)', () => {
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(user.email);
+      expect(response.body.email).toEqual(user.login);
       response = await request(app.getHttpServer()).get(`/users/${userId}`);
       expect(response.body.roles).not.toContainEqual(
         expect.objectContaining({ name: 'ADMIN' }),
@@ -330,38 +280,6 @@ describe('UsersController (e2e)', () => {
         refresh_token: expect.any(String),
       });
     });
-  });
-
-  afterAll(async () => {
-    const truncates = Promise.all([
-      RefreshModel.truncate({
-        cascade: true,
-        force: true,
-        restartIdentity: true,
-      }),
-      ProfileModel.truncate({
-        cascade: true,
-        force: true,
-        restartIdentity: true,
-      }),
-      UserRolesModel.truncate({
-        cascade: true,
-        force: true,
-        restartIdentity: true,
-      }),
-      UserModel.truncate({
-        cascade: true,
-        force: true,
-        restartIdentity: true,
-      }),
-      RoleModel.truncate({
-        cascade: true,
-        force: true,
-        restartIdentity: true,
-      }),
-    ]);
-    await truncates;
-    await app.close();
   });
 
   function postNotAuthorized(url: string, send: any) {
