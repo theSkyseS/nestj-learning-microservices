@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ProfileModel } from './profiles/profiles.model';
 import { ProfilesModule } from './profiles/profiles.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './logger.interceptor';
 
 @Module({
   imports: [
@@ -16,6 +18,12 @@ import { ProfilesModule } from './profiles/profiles.module';
       models: [ProfileModel],
     }),
     ProfilesModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
   ],
 })
 export class AppModule {}

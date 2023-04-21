@@ -7,6 +7,8 @@ import { RolesModule } from './roles/roles.module';
 import { UserRolesModel } from './roles/user-roles.model';
 import { UserModel } from './users/users.model';
 import { UsersModule } from './users/users.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggingInterceptor } from './logger.interceptor';
 
 @Module({
   imports: [
@@ -24,6 +26,12 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     RolesModule,
     AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
   ],
 })
 export class AppModule {}
