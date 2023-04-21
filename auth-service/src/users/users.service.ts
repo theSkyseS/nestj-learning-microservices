@@ -71,12 +71,12 @@ export class UsersService {
 
   async updateUser(id: number, dto: UpdateUserDto) {
     const user = await this.userRepository.findByPk(id);
-    if (dto.email) {
-      const userData = await this.getUserByLogin(dto.email);
+    if (dto.login) {
+      const userData = await this.getUserByLogin(dto.login);
       if (userData) {
         throw new BadRequestException('User with this email already exists');
       }
-      user.login = dto.email;
+      user.login = dto.login;
     }
 
     if (dto.password) {

@@ -7,18 +7,13 @@ import { ProfilesService } from './profiles.service';
 describe('ProfilesService', () => {
   const userMock = {
     id: '1',
-    email: 'johndoe@example.com',
+    login: 'johndoe@example.com',
     password: 'encryptedString123',
     roles: [],
   };
 
-  const tokensMock = {
-    accessToken: 'accessToken',
-    refreshToken: 'refreshToken',
-  };
-
   const dto: CreateProfileDto = {
-    email: 'janedoe@example.com',
+    login: 'janedoe@example.com',
     password: 'encryptedString123',
     name: 'Jane Doe',
     phoneNumber: '0987654321',
@@ -120,6 +115,14 @@ describe('ProfilesService', () => {
       const findSpy = jest.spyOn(model, 'findAll');
       await service.getAllProfiles();
       expect(findSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('createProfile', () => {
+    it('should create a profile', async () => {
+      const createSpy = jest.spyOn(model, 'create');
+      await service.createProfile(dto);
+      expect(createSpy).toHaveBeenCalledWith(dto);
     });
   });
 
