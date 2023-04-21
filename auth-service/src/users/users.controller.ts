@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, UseInterceptors } from '@nestjs/common';
 import { AddRoleDto } from './dto/add-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,14 +11,32 @@ import { AckInterceptor } from '../ack.interceptor';
 export class UsersController {
   constructor(private usersServise: UsersService) {}
 
-  @MessagePattern('users.create')
-  create(@Body() userDto: CreateUserDto) {
-    return this.usersServise.createUser(userDto);
-  }
-
   @MessagePattern('users.getAll')
   getAll() {
     return this.usersServise.getAllUsers();
+  }
+
+  @MessagePattern('users.getOne')
+  getOne(@Payload() id: number) {
+    return this.usersServise.getUserById(id);
+  }
+
+  @MessagePattern('users.create')
+  create(@Payload() userDto: CreateUserDto) {
+    return this.usersServise.createUser(userDto);
+  }
+
+  @MessagePattern('users.update')
+  update(
+    @Payload('id') id: number,
+    @Payload('userDto') userDto: UpdateUserDto,
+  ) {
+    return this.usersServise.updateUser(id, userDto);
+  }
+
+  @MessagePattern('users.delete')
+  delete(@Payload() id: number) {
+    return this.usersServise.deleteUser(id);
   }
 
   @MessagePattern('users.removeRole')
@@ -35,23 +44,8 @@ export class UsersController {
     return this.usersServise.removeRoleFromUser(dto);
   }
 
-  @Post('/role')
-  addRole(@Body() dto: AddRoleDto) {
+  @MessagePattern('users.addRole')
+  addRole(@Payload() dto: AddRoleDto) {
     return this.usersServise.addRoleToUser(dto);
-  }
-
-  @Get(':id')
-  get(@Param('id') id: number) {
-    return this.usersServise.getUserById(id);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: number, @Body() userDto: UpdateUserDto) {
-    return this.usersServise.updateUser(id, userDto);
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: number) {
-    return this.usersServise.deleteUser(id);
   }
 }

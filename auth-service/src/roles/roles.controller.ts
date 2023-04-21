@@ -7,11 +7,6 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
-  @MessagePattern('roles.create')
-  create(@Payload() dto: CreateRoleDto) {
-    return this.rolesService.createRole(dto);
-  }
-
   @MessagePattern('roles.getAll')
   getAll() {
     return this.rolesService.getAllRoles();
@@ -20,5 +15,10 @@ export class RolesController {
   @MessagePattern('roles.getByName')
   getByName(@Payload('name') name: string) {
     return this.rolesService.getRoleByName(name);
+  }
+
+  @MessagePattern('roles.create')
+  create(@Payload() dto: CreateRoleDto) {
+    return this.rolesService.createRole(dto);
   }
 }
