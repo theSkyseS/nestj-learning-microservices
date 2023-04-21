@@ -88,4 +88,13 @@ export class UsersService {
     }
     return await user.save();
   }
+
+  async truncate() {
+    if (process.env.NODE_ENV === 'test') {
+      return await this.userRepository.truncate({
+        cascade: true,
+        restartIdentity: true,
+      });
+    }
+  }
 }

@@ -8,15 +8,15 @@ import { RoleModel } from './roles.model';
 export class RolesService {
   constructor(
     @InjectModel(RoleModel)
-    private readonly roleModel: typeof RoleModel,
+    private readonly roleRepository: typeof RoleModel,
   ) {}
 
   async getAllRoles(): Promise<RoleModel[]> {
-    return await this.roleModel.findAll();
+    return await this.roleRepository.findAll();
   }
 
   async getRoleByName(name: string): Promise<RoleModel> {
-    return await this.roleModel.findOne({
+    return await this.roleRepository.findOne({
       where: {
         name: name,
       },
@@ -24,6 +24,15 @@ export class RolesService {
   }
 
   async createRole(role: CreateRoleDto): Promise<RoleModel> {
-    return await this.roleModel.create(role);
+    return await this.roleRepository.create(role);
+  }
+
+  async truncate(): Promise<void> {
+    if (process.env.NODE_ENV === 'test') {
+      await this.roleRepository.truncate({
+        cascade: true,
+        restartIdentity: true,
+      });
+    }
   }
 }

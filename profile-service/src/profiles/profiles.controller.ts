@@ -42,4 +42,9 @@ export class ProfilesController {
       message: 'Profile deleted successfully',
     };
   }
+
+  @MessagePattern('profiles.truncate')
+  truncate() {
+    return this.profilesService.truncate();
+  }
 }

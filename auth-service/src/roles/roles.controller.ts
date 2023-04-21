@@ -21,4 +21,9 @@ export class RolesController {
   create(@Payload() dto: CreateRoleDto) {
     return this.rolesService.createRole(dto);
   }
+
+  @MessagePattern('roles.truncate')
+  truncate() {
+    return this.rolesService.truncate();
+  }
 }

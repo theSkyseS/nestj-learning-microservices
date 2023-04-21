@@ -48,4 +48,9 @@ export class UsersController {
   addRole(@Payload() dto: AddRoleDto) {
     return this.usersServise.addRoleToUser(dto);
   }
+
+  @MessagePattern('users.truncate')
+  truncate() {
+    return this.usersServise.truncate();
+  }
 }

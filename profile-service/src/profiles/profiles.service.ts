@@ -37,4 +37,13 @@ export class ProfilesService {
     const profile = await this.profileRepository.findByPk(id);
     return await profile.destroy();
   }
+
+  async truncate() {
+    if (process.env.NODE_ENV === 'test') {
+      await this.profileRepository.truncate({
+        cascade: true,
+        restartIdentity: true,
+      });
+    }
+  }
 }

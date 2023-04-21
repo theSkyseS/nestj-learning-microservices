@@ -31,4 +31,9 @@ export class AuthController {
   validate(@Payload() token: string) {
     return this.authService.validateAccessToken(token);
   }
+
+  @MessagePattern('auth.truncate')
+  truncate() {
+    return this.authService.truncate();
+  }
 }

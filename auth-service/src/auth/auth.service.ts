@@ -166,4 +166,13 @@ export class AuthService {
       }),
     };
   }
+
+  async truncate() {
+    if (process.env.NODE_ENV === 'test') {
+      await this.refreshRepository.truncate({
+        cascade: true,
+        restartIdentity: true,
+      });
+    }
+  }
 }
