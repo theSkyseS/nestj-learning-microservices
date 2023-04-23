@@ -32,6 +32,6 @@ export class RefreshModel extends Model<
   })
   userId: number;
 
-  @BelongsTo(() => UserModel, 'userId')
+  @BelongsTo(() => UserModel, { foreignKey: 'userId', onDelete: 'CASCADE' })
   user: UserModel;
 }
