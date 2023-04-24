@@ -6,7 +6,6 @@ import * as bcrypt from 'bcryptjs';
 import {
   adminUser,
   newUser,
-  nonExistentUser,
   registerUser,
   user,
   userHashedPassword,
@@ -29,41 +28,14 @@ describe('UsersController (e2e)', () => {
     await app.init();
   });
 
-  describe('/users/login (POST)', () => {
-    it('should respond 401 if password is incorrect', async () => {
-      await request(app.getHttpServer())
-        .post('/users/login')
-        .send({
-          email: adminUser.login,
-          password: 'test',
-        })
-        .expect(401);
-    });
-
-    it("should respond 400 if user doesn't exist", async () => {
-      await request(app.getHttpServer())
-        .post('/users/login')
-        .send(nonExistentUser)
-        .expect(400);
-    });
-
-    it('should respond 201 if user exists and password is correct', async () => {
-      const adminResponse = await request(app.getHttpServer())
-        .post('/users/login')
-        .send(adminUser)
-        .expect(201);
-      adminTokens = adminResponse.body.response;
-
-      const userResponse = await request(app.getHttpServer())
-        .post('/users/login')
-        .send(user)
-        .expect(201);
-      userTokens = userResponse.body.response;
-    });
-  });
-
   describe('/users (POST)', () => {
     const url = '/users';
+
+    beforeEach(async () => {
+      loginAsUser();
+      loginAsAdmin();
+    });
+
     postNotAuthorized(url, newUser);
 
     postNotAdmin(url, newUser);
@@ -84,11 +56,12 @@ describe('UsersController (e2e)', () => {
         .get('/users')
         .expect(200);
       expect(response.body.length).toBeGreaterThan(0);
+      userId = response.body[0].id;
     });
   });
 
   describe('/users/:id (GET)', () => {
-    it('should return user', async () => {
+    it('should return a user', async () => {
       const response = await request(app.getHttpServer())
         .get(`/users/${userId}`)
         .expect(200);
@@ -101,8 +74,14 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/users/role (POST)', () => {
-    const url = '/users/role';
+  describe('/users/roles/add (POST)', () => {
+    const url = '/users/roles/add';
+
+    beforeEach(async () => {
+      loginAsUser();
+      loginAsAdmin();
+    });
+
     postNotAuthorized(url, {
       userId: userId,
       role: 'ADMIN',
@@ -130,8 +109,14 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/users/role/remove (POST)', () => {
-    const url = '/users/role/remove';
+  describe('/users/roles/remove (POST)', () => {
+    const url = '/users/roles/remove';
+
+    beforeEach(async () => {
+      loginAsUser();
+      loginAsAdmin();
+    });
+
     postNotAuthorized(url, {
       userId: userId,
       role: 'ADMIN',
@@ -159,50 +144,14 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/users/refresh (POST)', () => {
-    let userTokens: Tokens;
-    beforeAll(async () => {
-      const response = await request(app.getHttpServer())
-        .post('/users/login')
-        .send(user);
-      userTokens = response.body.response;
-    });
-
-    it('should return new tokens', async () => {
-      console.log(userTokens);
-      const response = await request(app.getHttpServer())
-        .post('/users/refresh')
-        .set('Authorization', `Bearer ${userTokens.access_token}`)
-        .send({ refresh_token: userTokens.refresh_token })
-        .expect(201);
-      expect(response.body.tokens).toEqual<Tokens>({
-        access_token: expect.any(String),
-        refresh_token: expect.any(String),
-      });
-    });
-  });
-
-  describe('/users/logout (POST)', () => {
-    let userTokens: Tokens;
-    beforeAll(async () => {
-      const response = await request(app.getHttpServer())
-        .post('/users/login')
-        .send(user);
-      userTokens = response.body.response;
-    });
-
-    it('should remove refresh token from the database', async () => {
-      await request(app.getHttpServer())
-        .post('/users/logout')
-        .set('Authorization', `Bearer ${userTokens.access_token}`)
-        .send({ refresh_token: userTokens.refresh_token })
-        .expect(201);
-    });
-  });
-
   describe('users/:id (PUT)', () => {
     const newEmail = 'newEmail@gmail.com';
     const newPassword = 'newPassword';
+
+    beforeEach(async () => {
+      loginAsUser();
+      loginAsAdmin();
+    });
 
     it('should respond 401 if not authorized', async () => {
       await request(app.getHttpServer())
@@ -242,6 +191,11 @@ describe('UsersController (e2e)', () => {
   });
 
   describe('/users/:id (DELETE)', () => {
+    beforeEach(async () => {
+      loginAsUser();
+      loginAsAdmin();
+    });
+
     it('should respond 401 if not authorized', async () => {
       await request(app.getHttpServer()).delete(`/users/${userId}`).expect(401);
     });
@@ -262,25 +216,21 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('/users/register (POST)', () => {
-    it('should return profile and tokens', async () => {
-      const profile = {
-        name: 'newer user',
-        phoneNumber: '+79991234567',
-        about: 'I am user',
-        address: 'User st., 25',
-      };
-      const response = await request(app.getHttpServer())
-        .post('/users/register')
-        .send(registerUser)
-        .expect(201);
-      expect(response.body.profile).toEqual(expect.objectContaining(profile));
-      expect(response.body.tokens).toEqual<Tokens>({
-        access_token: expect.any(String),
-        refresh_token: expect.any(String),
-      });
-    });
-  });
+  async function loginAsAdmin() {
+    const adminResponse = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send(adminUser)
+      .expect(201);
+    adminTokens = adminResponse.body.response;
+  }
+
+  async function loginAsUser() {
+    const userResponse = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send(user)
+      .expect(201);
+    userTokens = userResponse.body.response;
+  }
 
   function postNotAuthorized(url: string, send: any) {
     it('should respond 401 if unauthorized', async () => {
@@ -297,4 +247,8 @@ describe('UsersController (e2e)', () => {
         .expect(403);
     });
   }
+
+  afterAll(async () => {
+    await app.close();
+  });
 });
