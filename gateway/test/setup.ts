@@ -50,8 +50,10 @@ module.exports = async function () {
     }),
   );
 
-  authService.send('users.addRole', {
-    userId: createdAdmin.id,
-    roleId: 'ADMIN',
-  });
+  await lastValueFrom(
+    authService.send('users.addRole', {
+      userId: createdAdmin.id,
+      role: 'ADMIN',
+    }),
+  );
 };
