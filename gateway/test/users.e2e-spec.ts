@@ -10,6 +10,7 @@ import {
   user,
   userHashedPassword,
 } from './constants';
+import { LoginDto } from '../src/auth-gateway/dto/login.dto';
 
 describe('UsersController (e2e)', () => {
   type Tokens = { access_token: string; refresh_token: string };
@@ -32,8 +33,8 @@ describe('UsersController (e2e)', () => {
     const url = '/users';
 
     beforeEach(async () => {
-      loginAsUser();
-      loginAsAdmin();
+      userTokens = await loginAsUser();
+      adminTokens = await loginAsAdmin();
     });
 
     postNotAuthorized(url, newUser);
@@ -46,7 +47,7 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send(newUser)
         .expect(201);
-      expect(response.body.email).toEqual(newUser.login);
+      expect(response.body.login).toEqual(newUser.login);
     });
   });
 
@@ -56,7 +57,7 @@ describe('UsersController (e2e)', () => {
         .get('/users')
         .expect(200);
       expect(response.body.length).toBeGreaterThan(0);
-      userId = response.body[0].id;
+      userId = response.body.find((x: LoginDto) => x.login === user.login).id;
     });
   });
 
@@ -67,7 +68,7 @@ describe('UsersController (e2e)', () => {
         .expect(200);
       expect(response.body).toEqual(
         expect.objectContaining({
-          email: user.login,
+          login: user.login,
           password: userHashedPassword,
         }),
       );
@@ -75,33 +76,31 @@ describe('UsersController (e2e)', () => {
   });
 
   describe('/users/roles/add (POST)', () => {
-    const url = '/users/roles/add';
-
     beforeEach(async () => {
-      loginAsUser();
-      loginAsAdmin();
+      userTokens = await loginAsUser();
+      adminTokens = await loginAsAdmin();
     });
 
-    postNotAuthorized(url, {
+    postNotAuthorized(`/users/${userId}/roles/add`, {
       userId: userId,
       role: 'ADMIN',
     });
 
-    postNotAdmin(url, {
+    postNotAdmin(`/users/${userId}/roles/add`, {
       userId: userId,
       role: 'ADMIN',
     });
 
     it('should add role to user if admin', async () => {
       let response = await request(app.getHttpServer())
-        .post(url)
+        .post(`/users/${userId}/roles/add`)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
           userId: userId,
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(user.login);
+      expect(response.body.login).toEqual(user.login);
       response = await request(app.getHttpServer()).get(`/users/${userId}`);
       expect(response.body.roles).toContainEqual(
         expect.objectContaining({ name: 'ADMIN' }),
@@ -110,34 +109,31 @@ describe('UsersController (e2e)', () => {
   });
 
   describe('/users/roles/remove (POST)', () => {
-    const url = '/users/roles/remove';
-
     beforeEach(async () => {
-      loginAsUser();
-      loginAsAdmin();
+      userTokens = await loginAsUser();
+      adminTokens = await loginAsAdmin();
     });
 
-    postNotAuthorized(url, {
-      userId: userId,
+    postNotAuthorized(`/users/${userId}/roles/remove`, {
       role: 'ADMIN',
     });
 
-    postNotAdmin(url, {
-      userId: userId,
+    postNotAdmin(`/users/${userId}/roles/remove`, {
       role: 'ADMIN',
     });
 
     it('should remove role from user if admin', async () => {
       let response = await request(app.getHttpServer())
-        .post(url)
+        .post(`/users/${userId}/roles/remove`)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
-          userId: userId,
           role: 'ADMIN',
         })
         .expect(201);
-      expect(response.body.email).toEqual(user.login);
+      expect(response.body.login).toEqual(user.login);
+      console.log(response.body);
       response = await request(app.getHttpServer()).get(`/users/${userId}`);
+      console.log(response.body);
       expect(response.body.roles).not.toContainEqual(
         expect.objectContaining({ name: 'ADMIN' }),
       );
@@ -149,15 +145,15 @@ describe('UsersController (e2e)', () => {
     const newPassword = 'newPassword';
 
     beforeEach(async () => {
-      loginAsUser();
-      loginAsAdmin();
+      userTokens = await loginAsUser();
+      adminTokens = await loginAsAdmin();
     });
 
     it('should respond 401 if not authorized', async () => {
       await request(app.getHttpServer())
-        .put(`/users/${userId}`)
+        .put(`/users/${+userId + 1}`)
         .send({
-          email: newEmail,
+          login: newEmail,
           password: newPassword,
         })
         .expect(401);
@@ -165,10 +161,10 @@ describe('UsersController (e2e)', () => {
 
     it('should respond 403 if user is not admin', async () => {
       await request(app.getHttpServer())
-        .put(`/users/${userId}`)
+        .put(`/users/${+userId + 1}`)
         .set('Authorization', `Bearer ${userTokens.access_token}`)
         .send({
-          email: newEmail,
+          login: newEmail,
           password: newPassword,
         })
         .expect(403);
@@ -176,14 +172,14 @@ describe('UsersController (e2e)', () => {
 
     it('should update user', async () => {
       const response = await request(app.getHttpServer())
-        .put(`/users/${userId}`)
+        .put(`/users/${+userId + 1}`)
         .set('Authorization', `Bearer ${adminTokens.access_token}`)
         .send({
-          email: newEmail,
+          login: newEmail,
           password: newPassword,
         })
         .expect(200);
-      expect(response.body.email).toEqual(newEmail);
+      expect(response.body.login).toEqual(newEmail);
       expect(bcrypt.compareSync(newPassword, response.body.password)).toBe(
         true,
       );
@@ -192,8 +188,10 @@ describe('UsersController (e2e)', () => {
 
   describe('/users/:id (DELETE)', () => {
     beforeEach(async () => {
-      loginAsUser();
-      loginAsAdmin();
+      userTokens = await loginAsUser();
+      adminTokens = await loginAsAdmin();
+      console.log(userTokens);
+      console.log(adminTokens);
     });
 
     it('should respond 401 if not authorized', async () => {
@@ -221,7 +219,7 @@ describe('UsersController (e2e)', () => {
       .post('/auth/login')
       .send(adminUser)
       .expect(201);
-    adminTokens = adminResponse.body.response;
+    return adminResponse.body.response;
   }
 
   async function loginAsUser() {
@@ -229,7 +227,7 @@ describe('UsersController (e2e)', () => {
       .post('/auth/login')
       .send(user)
       .expect(201);
-    userTokens = userResponse.body.response;
+    return userResponse.body.response;
   }
 
   function postNotAuthorized(url: string, send: any) {
