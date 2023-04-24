@@ -19,7 +19,7 @@ services:
     environment:
       - SERVICE_NAME=gateway
     env_file:
-      - development.env
+      - testing.env
     depends_on:
       - auth-service
       - profile-service
@@ -40,7 +40,7 @@ services:
     environment:
       - SERVICE_NAME=auth-service
     env_file:
-      - development.env
+      - testing.env
     depends_on:
       - db-auth
       - rabbitmq
@@ -58,7 +58,7 @@ services:
     environment:
       - SERVICE_NAME=profile-service
     env_file:
-      - development.env
+      - testing.env
     depends_on:
       - db-profile
       - rabbitmq
@@ -73,7 +73,7 @@ services:
       - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
       - POSTGRES_HOST=${AUTH_POSTGRES_HOST}
     env_file:
-      - development.env
+      - testing.env
     command: -p ${AUTH_POSTGRES_PORT}
     volumes:
       - auth-db:/var/lib/postgresql/data
@@ -93,7 +93,7 @@ services:
       - POSTGRES_PASSWORD=${PROFILE_POSTGRES_PASSWORD}
       - POSTGRES_HOST=${PROFILE_POSTGRES_HOST}
     env_file:
-      - development.env
+      - testing.env
     command: -p ${PROFILE_POSTGRES_PORT}
     volumes:
       - profile-db:/var/lib/postgresql/data
@@ -108,7 +108,7 @@ services:
   rabbitmq:
     image: rabbitmq:management-alpine
     env_file:
-      - development.env
+      - testing.env
     expose:
       - ${RABBITMQ_PORT}
     ports:

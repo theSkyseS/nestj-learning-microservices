@@ -13,7 +13,4 @@ COPY --chown=node:node . .
 
 USER node
 
-ENV PORT=${PROFILE_PORT:-5002}
-EXPOSE $PORT
-
 CMD ["npm", "run", "start"]
