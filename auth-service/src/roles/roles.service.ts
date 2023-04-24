@@ -1,5 +1,5 @@
 // Import the necessary modules
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { RoleModel } from './roles.model';
@@ -29,10 +29,11 @@ export class RolesService {
 
   async truncate(): Promise<void> {
     if (process.env.NODE_ENV === 'test') {
-      await this.roleRepository.truncate({
+      return await this.roleRepository.truncate({
         cascade: true,
         restartIdentity: true,
       });
     }
+    throw new NotFoundException();
   }
 }

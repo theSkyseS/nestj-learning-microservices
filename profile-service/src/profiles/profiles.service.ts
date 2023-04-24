@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -40,10 +40,11 @@ export class ProfilesService {
 
   async truncate() {
     if (process.env.NODE_ENV === 'test') {
-      await this.profileRepository.truncate({
+      return await this.profileRepository.truncate({
         cascade: true,
         restartIdentity: true,
       });
     }
+    throw new NotFoundException();
   }
 }

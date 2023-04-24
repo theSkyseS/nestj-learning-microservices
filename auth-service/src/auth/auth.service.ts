@@ -2,6 +2,7 @@ import { UsersService } from './../users/users.service';
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -169,10 +170,11 @@ export class AuthService {
 
   async truncate() {
     if (process.env.NODE_ENV === 'test') {
-      await this.refreshRepository.truncate({
+      return await this.refreshRepository.truncate({
         cascade: true,
         restartIdentity: true,
       });
     }
+    throw new NotFoundException();
   }
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
 import { RoleModel } from '../roles/roles.model';
@@ -96,5 +100,6 @@ export class UsersService {
         restartIdentity: true,
       });
     }
+    throw new NotFoundException();
   }
 }
