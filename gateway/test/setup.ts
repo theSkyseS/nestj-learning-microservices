@@ -38,14 +38,14 @@ module.exports = async function () {
 
   const createdAdmin = await lastValueFrom(
     authService.send('users.create', {
-      email: adminUser.login,
+      login: adminUser.login,
       password: adminUserHashedPassword,
     }),
   );
 
   await lastValueFrom(
     authService.send('users.create', {
-      email: user.login,
+      login: user.login,
       password: userHashedPassword,
     }),
   );
