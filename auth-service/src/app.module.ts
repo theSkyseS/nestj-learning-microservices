@@ -8,7 +8,7 @@ import { UserRolesModel } from './roles/user-roles.model';
 import { UserModel } from './users/users.model';
 import { UsersModule } from './users/users.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggingInterceptor } from './logger.interceptor';
+import { LoggingInterceptor } from './logging.interceptor';
 
 @Module({
   imports: [

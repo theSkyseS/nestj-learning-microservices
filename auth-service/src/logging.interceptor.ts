@@ -18,12 +18,11 @@ export class LoggingInterceptor implements NestInterceptor {
     const incomingContent = incomingMessage.content;
     const timestamp = Date.now();
 
+    this.logger.log(`Incoming message: ${incomingContent.toString('utf-8')}`);
+
     return next.handle().pipe(
       tap((outgoingMessage) => {
         const elapsedTime = Date.now() - timestamp;
-        this.logger.log(
-          `Incoming message: ${incomingContent.toString('utf-8')}`,
-        );
         this.logger.log(
           `Outgoing message: ${JSON.stringify(outgoingMessage, null, 2)}`,
         );
