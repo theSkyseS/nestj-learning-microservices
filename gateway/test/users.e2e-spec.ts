@@ -37,9 +37,12 @@ describe('UsersController (e2e)', () => {
       adminTokens = await loginAsAdmin();
     });
 
-    postNotAuthorized(url, newUser);
-
-    postNotAdmin(url, newUser);
+    it('should respond 401 if unauthorized', async () => {
+      await postNotAuthorized(url, newUser);
+    });
+    it('should respond 403 if not admin', async () => {
+      await postNotAdmin(url, newUser);
+    });
 
     it('should create a user and respond 201', async () => {
       const response = await request(app.getHttpServer())
@@ -81,14 +84,17 @@ describe('UsersController (e2e)', () => {
       adminTokens = await loginAsAdmin();
     });
 
-    postNotAuthorized(`/users/${userId}/roles/add`, {
-      userId: userId,
-      role: 'ADMIN',
+    it('should respond 401 if unauthorized', async () => {
+      await postNotAuthorized(`/users/${userId}/roles/add`, {
+        userId: userId,
+        role: 'ADMIN',
+      });
     });
-
-    postNotAdmin(`/users/${userId}/roles/add`, {
-      userId: userId,
-      role: 'ADMIN',
+    it('should respond 403 if not admin', async () => {
+      await postNotAdmin(`/users/${userId}/roles/add`, {
+        userId: userId,
+        role: 'ADMIN',
+      });
     });
 
     it('should add role to user if admin', async () => {
@@ -114,12 +120,16 @@ describe('UsersController (e2e)', () => {
       adminTokens = await loginAsAdmin();
     });
 
-    postNotAuthorized(`/users/${userId}/roles/remove`, {
-      role: 'ADMIN',
+    it('should respond 401 if unauthorized', async () => {
+      await postNotAuthorized(`/users/${userId}/roles/remove`, {
+        role: 'ADMIN',
+      });
     });
 
-    postNotAdmin(`/users/${userId}/roles/remove`, {
-      role: 'ADMIN',
+    it('should respond 403 if not admin', async () => {
+      await postNotAdmin(`/users/${userId}/roles/remove`, {
+        role: 'ADMIN',
+      });
     });
 
     it('should remove role from user if admin', async () => {
@@ -230,20 +240,16 @@ describe('UsersController (e2e)', () => {
     return userResponse.body.response;
   }
 
-  function postNotAuthorized(url: string, send: any) {
-    it('should respond 401 if unauthorized', async () => {
-      await request(app.getHttpServer()).post(url).send(send).expect(401);
-    });
+  async function postNotAuthorized(url: string, send: any) {
+    return await request(app.getHttpServer()).post(url).send(send).expect(401);
   }
 
-  function postNotAdmin(url: string, send: any) {
-    it('should respond 403 if not admin', async () => {
-      await request(app.getHttpServer())
-        .post(url)
-        .set('Authorization', `Bearer ${userTokens.access_token}`)
-        .send(send)
-        .expect(403);
-    });
+  async function postNotAdmin(url: string, send: any) {
+    return await request(app.getHttpServer())
+      .post(url)
+      .set('Authorization', `Bearer ${userTokens.access_token}`)
+      .send(send)
+      .expect(403);
   }
 
   afterAll(async () => {
