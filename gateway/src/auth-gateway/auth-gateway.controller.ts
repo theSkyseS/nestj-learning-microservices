@@ -1,4 +1,11 @@
-import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  NotFoundException,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { LoginDto } from './dto/login.dto';
@@ -28,7 +35,7 @@ export class AuthGatewayController {
     const profile = await lastValueFrom(
       this.profileService.send('profiles.create', {
         userId: user.user.id,
-        register,
+        ...register,
       }),
     );
 
