@@ -11,6 +11,7 @@ import { AddRoleDto } from './dto/add-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserModel } from './users.model';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class UsersService {
@@ -51,8 +52,10 @@ export class UsersService {
       await user.$add('roles', role.id);
       return user;
     }
-    throw new BadRequestException(
-      `Role: ${dto.role} or User: ${dto.userId} not found`,
+    throw new RpcException(
+      new BadRequestException(
+        `Role: ${dto.role} or User: ${dto.userId} not found`,
+      ),
     );
   }
 
@@ -63,8 +66,10 @@ export class UsersService {
       await user.$remove('roles', role.id);
       return user;
     }
-    throw new BadRequestException(
-      `Role: ${dto.role} or User: ${dto.userId} not found`,
+    throw new RpcException(
+      new BadRequestException(
+        `Role: ${dto.role} or User: ${dto.userId} not found`,
+      ),
     );
   }
 
@@ -78,7 +83,9 @@ export class UsersService {
     if (dto.login) {
       const userData = await this.getUserByLogin(dto.login);
       if (userData) {
-        throw new BadRequestException('User with this email already exists');
+        throw new RpcException(
+          new BadRequestException('User with this email already exists'),
+        );
       }
       user.login = dto.login;
     }
@@ -100,6 +107,6 @@ export class UsersService {
         restartIdentity: true,
       });
     }
-    throw new NotFoundException();
+    throw new RpcException(new NotFoundException());
   }
 }

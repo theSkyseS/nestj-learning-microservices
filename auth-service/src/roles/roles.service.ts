@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { RoleModel } from './roles.model';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class RolesService {
@@ -34,6 +35,6 @@ export class RolesService {
         restartIdentity: true,
       });
     }
-    throw new NotFoundException();
+    throw new RpcException(new NotFoundException());
   }
 }

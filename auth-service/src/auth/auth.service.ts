@@ -12,6 +12,7 @@ import { Payload } from '../auth/auth.payload';
 import { UserModel } from '../users/users.model';
 import { RefreshModel } from './refresh-token.model';
 import { LoginDto } from './dto/login.dto';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,7 @@ export class AuthService {
   async login(user: LoginDto) {
     const userData = await this.usersService.getUserByLogin(user.login);
     if (!userData) {
-      throw new BadRequestException('User not found');
+      throw new RpcException(new BadRequestException('User not found'));
     }
 
     const isValid = await this.validatePassword(
@@ -32,7 +33,7 @@ export class AuthService {
       userData.password,
     );
     if (!isValid) {
-      throw new UnauthorizedException('Invalid password');
+      throw new RpcException(new BadRequestException('User not found'));
     }
 
     const tokens = await this.generateToken(userData);
@@ -45,7 +46,7 @@ export class AuthService {
     try {
       const userData = await this.usersService.getUserByLogin(user.login);
       if (userData) {
-        throw new BadRequestException('User already exists');
+        throw new RpcException(new BadRequestException('User already exists'));
       }
       const hashedPassword = await bcrypt.hash(
         user.password,
@@ -72,22 +73,30 @@ export class AuthService {
 
   async refresh(refreshToken: string) {
     if (!refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new RpcException(
+        new UnauthorizedException('Invalid refresh token'),
+      );
     }
 
     const decodedToken = await this.validateRefreshToken(refreshToken);
     if (!decodedToken) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new RpcException(
+        new UnauthorizedException('Invalid refresh token'),
+      );
     }
 
     const tokenData = await this.findRefreshToken(refreshToken);
     if (!tokenData) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new RpcException(
+        new UnauthorizedException('Invalid refresh token'),
+      );
     }
 
     const userData = await this.usersService.getUserById(tokenData.userId);
     if (userData.id !== decodedToken.id) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new RpcException(
+        new UnauthorizedException('Invalid refresh token'),
+      );
     }
 
     const tokens = await this.generateToken(userData);
@@ -175,6 +184,6 @@ export class AuthService {
         restartIdentity: true,
       });
     }
-    throw new NotFoundException();
+    throw new RpcException(new NotFoundException());
   }
 }

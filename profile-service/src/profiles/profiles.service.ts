@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileModel } from './profiles.model';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class ProfilesService {
@@ -45,6 +46,6 @@ export class ProfilesService {
         restartIdentity: true,
       });
     }
-    throw new NotFoundException();
+    throw new RpcException(new NotFoundException());
   }
 }
