@@ -11,6 +11,7 @@ import {
   user,
   userHashedPassword,
 } from './constants';
+import { RpcErrorFilter } from '../src/rpc-error.filter';
 
 describe('UsersController (e2e)', () => {
   type Tokens = { access_token: string; refresh_token: string };
@@ -26,6 +27,7 @@ describe('UsersController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new RpcErrorFilter());
     await app.init();
   });
 
@@ -34,7 +36,7 @@ describe('UsersController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/auth/login')
         .send({
-          email: adminUser.login,
+          login: adminUser.login,
           password: 'test',
         })
         .expect(401);
@@ -114,10 +116,16 @@ describe('UsersController (e2e)', () => {
         .send(registerUser)
         .expect(201);
       expect(response.body.profile).toEqual(expect.objectContaining(profile));
-      expect(response.body.tokens).toEqual<Tokens>({
+      expect(response.body.user).toEqual(
+        expect.objectContaining(registerUser.login),
+      );
+      expect(response.body.user.tokens).toEqual<Tokens>({
         access_token: expect.any(String),
         refresh_token: expect.any(String),
       });
     });
+  });
+  afterAll(async () => {
+    await app.close();
   });
 });
