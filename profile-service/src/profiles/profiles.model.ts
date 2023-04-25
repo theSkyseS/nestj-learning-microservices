@@ -5,6 +5,7 @@ interface ProfileModelCreationAttr {
   phoneNumber: string;
   about: string;
   address: string;
+  userId: number;
 }
 
 @Table({ tableName: 'profiles' })
