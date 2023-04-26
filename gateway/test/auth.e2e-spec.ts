@@ -2,24 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import * as bcrypt from 'bcryptjs';
-import {
-  adminUser,
-  newUser,
-  nonExistentUser,
-  registerUser,
-  user,
-  userHashedPassword,
-} from './constants';
-import { RpcErrorFilter } from '../src/rpc-error.filter';
+import { adminUser, nonExistentUser, registerUser, user } from './constants';
+import { MicroserviceExceptionFilter } from '../src/microservice-exception.filter';
 
 describe('UsersController (e2e)', () => {
   type Tokens = { access_token: string; refresh_token: string };
   let app: INestApplication;
-
-  let adminTokens: Tokens;
-  let userTokens: Tokens;
-  let userId: number;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,7 +15,7 @@ describe('UsersController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalFilters(new RpcErrorFilter());
+    app.useGlobalFilters(new MicroserviceExceptionFilter());
     await app.init();
   });
 
@@ -87,14 +75,17 @@ describe('UsersController (e2e)', () => {
 
   describe('/users/logout (POST)', () => {
     let userTokens: Tokens;
+
     beforeAll(async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/login')
         .send(user);
       userTokens = response.body.response;
+      console.log(userTokens);
     });
 
     it('should remove refresh token from the database', async () => {
+      console.log(userTokens);
       await request(app.getHttpServer())
         .post('/auth/logout')
         .set('Authorization', `Bearer ${userTokens.access_token}`)
@@ -116,9 +107,13 @@ describe('UsersController (e2e)', () => {
         .send(registerUser)
         .expect(201);
       expect(response.body.profile).toEqual(expect.objectContaining(profile));
-      expect(response.body.user).toEqual(
-        expect.objectContaining(registerUser.login),
-      );
+      expect(response.body.user).toMatchObject({
+        user: expect.any(Object),
+        tokens: {
+          access_token: expect.any(String),
+          refresh_token: expect.any(String),
+        },
+      });
       expect(response.body.user.tokens).toEqual<Tokens>({
         access_token: expect.any(String),
         refresh_token: expect.any(String),
