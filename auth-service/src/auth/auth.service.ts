@@ -33,7 +33,7 @@ export class AuthService {
       userData.password,
     );
     if (!isValid) {
-      throw new RpcException(new BadRequestException('User not found'));
+      throw new RpcException(new UnauthorizedException('Invalid password'));
     }
 
     const tokens = await this.generateToken(userData);
