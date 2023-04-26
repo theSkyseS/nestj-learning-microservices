@@ -1,9 +1,8 @@
 import { ExceptionFilter, Catch, ArgumentsHost } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import { Request, Response } from 'express';
 
 @Catch()
-export class RpcErrorFilter implements ExceptionFilter {
+export class MicroserviceExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
@@ -16,7 +15,7 @@ export class RpcErrorFilter implements ExceptionFilter {
     let statusCode: number;
     let message: string;
     if (typeof error === 'string') {
-      statusCode = 400;
+      statusCode = 500;
       message = error;
     } else {
       statusCode = error['status'];

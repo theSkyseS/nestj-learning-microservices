@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Inject,
-  NotFoundException,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { LoginDto } from './dto/login.dto';

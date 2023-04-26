@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { RpcErrorFilter } from './rpc-error.filter';
+import { MicroserviceExceptionFilter } from './microservice-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,7 +17,7 @@ async function bootstrap() {
   const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('/docs', app, swaggerDoc);
 
-  //app.useGlobalFilters(new RpcErrorFilter());
+  app.useGlobalFilters(new MicroserviceExceptionFilter());
   await app.listen(process.env.GATEWAY_PORT || 5000);
 }
 bootstrap();

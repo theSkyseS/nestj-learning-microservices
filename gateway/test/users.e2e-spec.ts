@@ -3,13 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import * as bcrypt from 'bcryptjs';
-import {
-  adminUser,
-  newUser,
-  registerUser,
-  user,
-  userHashedPassword,
-} from './constants';
+import { adminUser, newUser, user, userHashedPassword } from './constants';
 import { LoginDto } from '../src/auth-gateway/dto/login.dto';
 
 describe('UsersController (e2e)', () => {
